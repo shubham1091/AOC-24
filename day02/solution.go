@@ -1,83 +1,32 @@
-package main
+package day02
 
 import (
+	"AOC-24/utils"
 	"bufio"
 	"bytes"
 	"fmt"
-	"io"
-	"net/http"
-	"os"
 	"strconv"
 	"strings"
-
-	"github.com/joho/godotenv"
 )
 
-func init() {
-	// Load .env file
-	if err := godotenv.Load(); err != nil {
-		fmt.Println("Error loading .env file")
-	}
-}
-func main() {
-	data, err := fetchInput()
+// day02/solution.go
+func Run() {
+	data, err := utils.FetchInput(2)
 	if err != nil {
 		fmt.Println("Error fetching input:", err)
 		return
 	}
+
 	scanner := bufio.NewScanner(bytes.NewReader(data))
-
-	var safeCount, safeCountWithDampener int
+	var input []string
 	for scanner.Scan() {
-		line := scanner.Text()
-		numbers := strings.Fields(line)
-
-		var data []int
-		for _, number := range numbers {
-			n, err := strconv.Atoi(number)
-			if err != nil {
-				fmt.Println("Error parsing number:", err)
-				return
-			}
-			data = append(data, n)
-		}
-
-		if isSafe(data) {
-			safeCount++
-			safeCountWithDampener++
-		} else if isSafeWithDampener(data) {
-			safeCountWithDampener++
-		}
+		input = append(input, scanner.Text())
 	}
+
+	safeCount, safeCountWithDampener := processSafeData(input)
 
 	fmt.Println("Part 1 - Number of safe reports:", safeCount)
 	fmt.Println("Part 2 - Number of safe reports with dampener:", safeCountWithDampener)
-}
-
-func fetchInput() ([]byte, error) {
-	sessionCookie := os.Getenv("AOC_SESSION")
-	if sessionCookie == "" {
-		return nil, fmt.Errorf("AOC_SESSION environment variable not set")
-	}
-
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://adventofcode.com/2024/day/2/input", nil)
-	if err != nil {
-		return nil, err
-	}
-
-	req.AddCookie(&http.Cookie{
-		Name:  "session",
-		Value: sessionCookie,
-	})
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	return io.ReadAll(resp.Body)
 }
 
 func isSafeWithDampener(numbers []int) bool {
@@ -126,6 +75,33 @@ func isSafe(numbers []int) bool {
 	}
 
 	return true
+}
+
+// day02/solution.go
+func processSafeData(input []string) (int, int) {
+	var safeCount, safeCountWithDampener int
+	for _, line := range input {
+		numbers := strings.Fields(line)
+
+		var data []int
+		for _, number := range numbers {
+			n, err := strconv.Atoi(number)
+			if err != nil {
+				fmt.Println("Error parsing number:", err)
+				continue
+			}
+			data = append(data, n)
+		}
+
+		if isSafe(data) {
+			safeCount++
+			safeCountWithDampener++
+		} else if isSafeWithDampener(data) {
+			safeCountWithDampener++
+		}
+	}
+
+	return safeCount, safeCountWithDampener
 }
 
 // Helper function to get absolute value
