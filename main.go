@@ -5,6 +5,7 @@ import (
 	"AOC-24/day02"
 	"AOC-24/day03"
 	"AOC-24/day04"
+	"AOC-24/day05"
 	"AOC-24/utils"
 	"log"
 	"os"
@@ -37,6 +38,8 @@ func main() {
 		day03.Run()
 	case 4:
 		day04.Run()
+	case 5:
+		day05.Run()
 	default:
 		log.Fatalf("Day %d not implemented", day)
 	}
