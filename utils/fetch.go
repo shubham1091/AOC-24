@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -54,4 +56,13 @@ func FetchInput(day int) ([]byte, error) {
 	// Log successful fetch
 	log.Printf("Successfully fetched input for Day %d\n", day)
 	return data, nil
+}
+
+func ParseInput(data []byte) []string {
+	scanner := bufio.NewScanner(bytes.NewReader(data))
+	var grid []string
+	for scanner.Scan() {
+		grid = append(grid, scanner.Text())
+	}
+	return grid
 }
