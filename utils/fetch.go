@@ -9,52 +9,56 @@ import (
 	"net/http"
 )
 
-// FetchInput fetches the input data for a given day from the Advent of Code website.
-// It uses the GetSessionCookie function to retrieve the session cookie.
-// The function returns the input data as a byte slice and logs any errors encountered.
-func FetchInput(day int) ([]byte, error) {
-	// Retrieve session cookie from GetSessionCookie
-	sessionCookie, err := GetSessionCookie()
+type LoggedClient struct {
+	http.Client
+	Logger *log.Logger
+}
+
+func (c *LoggedClient) Do(req *http.Request) (*http.Response, error) {
+	c.Logger.Printf("Fetching input for day %s", req.URL)
+	resp, err := c.Client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get session cookie: %v", err)
+		c.Logger.Printf("Failed to fetch: %v", err)
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		c.Logger.Printf("Unexpected status code: %d", resp.StatusCode)
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+	return resp, nil
+}
+
+func FetchInput(day int) ([]byte, error) {
+	sessionCookie, err := GetEnvVar("SESSION_COOKIE")
+	if err != nil {
+		return nil, err
 	}
 
-	// Construct the URL for the input data
 	url := fmt.Sprintf("https://adventofcode.com/2024/day/%d/input", day)
-
-	// Create an HTTP client
-	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %v", err)
+		return nil, err
 	}
 
-	// Add the session cookie to the request
-	req.AddCookie(&http.Cookie{
-		Name:  "session",
-		Value: sessionCookie,
-	})
+	req.AddCookie(&http.Cookie{Name: "session", Value: sessionCookie})
 
-	// Send the request
-	resp, err := client.Do(req)
+	client := &LoggedClient{Client: *http.DefaultClient, Logger: log.Default()}
+	return client.fetchAndRead(req)
+}
+
+func (c *LoggedClient) fetchAndRead(req *http.Request) ([]byte, error) {
+	resp, err := c.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch input data: %v", err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 
-	// Check for non-200 status code
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
-	}
-
-	// Read the response body
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %v", err)
+		return nil, err
 	}
 
-	// Log successful fetch
-	log.Printf("Successfully fetched input for Day %d\n", day)
+	c.Logger.Printf("Successfully fetched input for URL %s\n", req.URL)
 	return data, nil
 }
 

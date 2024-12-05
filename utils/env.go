@@ -2,22 +2,22 @@ package utils
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/joho/godotenv"
 )
 
-func LoadEnv() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+func LoadEnv() error {
+	if err := godotenv.Load(); err != nil {
+		return fmt.Errorf("error loading .env file: %w", err)
 	}
+	return nil
 }
 
-func GetSessionCookie() (string, error) {
-	if os.Getenv("SESSION_COOKIE") == "" {
-		return "", fmt.Errorf("SESSION_COOKIE environment variable not set")
+func GetEnvVar(key string) (string, error) {
+	value := os.Getenv(key)
+	if value == "" {
+		return "", fmt.Errorf("%s environment variable not set", key)
 	}
-	return os.Getenv("SESSION_COOKIE"), nil
+	return value, nil
 }

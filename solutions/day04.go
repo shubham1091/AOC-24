@@ -1,31 +1,44 @@
-package day04
+package solutions
 
 import (
 	"AOC-24/utils"
 	"fmt"
 )
 
-func Run() {
-	// Fetch the input data
+// Day04 represents the solution for Day 03
+type Day04 struct{}
+
+// Solve executes both parts of the day's problem
+func (d *Day04) Solve() (interface{}, error) {
+	// Fetch input data
 	data, err := utils.FetchInput(4)
 	if err != nil {
-		fmt.Println("Error fetching input:", err)
-		return
+		return nil, fmt.Errorf("failed to fetch input: %w", err)
 	}
 
-	// Parse input data into a slice of strings
-	grid := utils.ParseInput(data)
+	// Parse input
+	input := utils.ParseInput(data)
 
-	// Count occurrences of "XMAS"
-	count := PartOne(grid)
-	fmt.Println("Number of times XMAS appears:", count)
+	// Solve both parts
+	partOneResult, err := d.PartOne(input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to solve part one: %w", err)
+	}
 
-	// Solve Part Two
-	countTwo := PartTwo(grid)
-	fmt.Println("Number of times X-MAS appears:", countTwo)
+	partTwoResult, err := d.PartTwo(input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to solve part two: %w", err)
+	}
+
+	// Return combined results
+	return map[string]interface{}{
+		"Part One": partOneResult,
+		"Part Two": partTwoResult,
+	}, nil
 }
 
-func PartOne(grid []string) int {
+// PartOne sums all results from valid `mul(x,y)` instructions
+func (d *Day04) PartOne(grid []string) (interface{}, error) {
 	word := "XMAS"
 	wordLen := len(word)
 	count := 0
@@ -55,21 +68,11 @@ func PartOne(grid []string) int {
 		}
 	}
 
-	return count
+	return count, nil
 }
 
-func checkWord(grid []string, word string, x, y, dx, dy, wordLen int) bool {
-	for i := 0; i < wordLen; i++ {
-		nx, ny := x+i*dx, y+i*dy
-		// Check bounds and character match
-		if nx < 0 || ny < 0 || nx >= len(grid) || ny >= len(grid[0]) || grid[nx][ny] != word[i] {
-			return false
-		}
-	}
-	return true
-}
-
-func PartTwo(grid []string) int {
+// PartTwo sums the results from `mul(x,y)` instructions, considering `do()` and `don't()`
+func (d *Day04) PartTwo(grid []string) (interface{}, error) {
 	count := 0
 
 	// Traverse each cell in the grid
@@ -82,7 +85,18 @@ func PartTwo(grid []string) int {
 		}
 	}
 
-	return count
+	return count, nil
+}
+
+func checkWord(grid []string, word string, x, y, dx, dy, wordLen int) bool {
+	for i := 0; i < wordLen; i++ {
+		nx, ny := x+i*dx, y+i*dy
+		// Check bounds and character match
+		if nx < 0 || ny < 0 || nx >= len(grid) || ny >= len(grid[0]) || grid[nx][ny] != word[i] {
+			return false
+		}
+	}
+	return true
 }
 
 func isXMas(grid []string, x, y int) bool {

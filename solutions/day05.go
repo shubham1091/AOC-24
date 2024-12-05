@@ -1,4 +1,4 @@
-package day05
+package solutions
 
 import (
 	"AOC-24/utils"
@@ -7,21 +7,36 @@ import (
 	"strings"
 )
 
-func Run() {
+type Day05 struct{}
+
+func (d *Day05) Solve() (interface{}, error) {
+	// Fetch input data
 	data, err := utils.FetchInput(5)
 	if err != nil {
-		fmt.Println("Error fetching input:", err)
-		return
+		return nil, fmt.Errorf("failed to fetch input: %w", err)
 	}
 	grid := utils.ParseInput(data)
 
-	rules, updates := processData(grid)
-	fmt.Println("Middle page number:", PartOne(rules, updates))
-	fmt.Println("Updated middle page number:", PartTwo(rules, updates))
+	// Solve both parts
+	partOneResult, err := d.PartOne(grid)
+	if err != nil {
+		return nil, fmt.Errorf("failed to solve part one: %w", err)
+	}
+
+	partTwoResult, err := d.PartTwo(grid)
+	if err != nil {
+		return nil, fmt.Errorf("failed to solve part two: %w", err)
+	}
+
+	// Return combined results
+	return map[string]interface{}{
+		"Part One": partOneResult,
+		"Part Two": partTwoResult,
+	}, nil
 }
 
-// processData separates the parsing logic for better organization
-func processData(input []string) (map[int][]int, [][]int) {
+// ProcessData separates the parsing logic for better organization
+func ProcessData(input []string) (map[int][]int, [][]int) {
 	rules := make(map[int][]int)
 	var updates [][]int
 	parsingRules := true
@@ -33,11 +48,11 @@ func processData(input []string) (map[int][]int, [][]int) {
 		}
 
 		if parsingRules {
-			if x, y, ok := parseRule(line); ok {
+			if x, y, ok := ParseRule(line); ok {
 				rules[x] = append(rules[x], y)
 			}
 		} else {
-			if update := parseUpdate(line); len(update) > 0 {
+			if update := ParseUpdate(line); len(update) > 0 {
 				updates = append(updates, update)
 			}
 		}
@@ -45,7 +60,7 @@ func processData(input []string) (map[int][]int, [][]int) {
 	return rules, updates
 }
 
-func parseRule(line string) (int, int, bool) {
+func ParseRule(line string) (int, int, bool) {
 	parts := strings.Split(line, "|")
 	if len(parts) != 2 {
 		return 0, 0, false
@@ -58,7 +73,7 @@ func parseRule(line string) (int, int, bool) {
 	return x, y, true
 }
 
-func parseUpdate(line string) []int {
+func ParseUpdate(line string) []int {
 	nums := strings.Split(line, ",")
 	update := make([]int, 0, len(nums))
 	for _, num := range nums {
@@ -69,17 +84,19 @@ func parseUpdate(line string) []int {
 	return update
 }
 
-func PartOne(rules map[int][]int, updates [][]int) int {
+func (d *Day05) PartOne(input []string) (interface{}, error) {
+	rules, updates := ProcessData(input)
 	sum := 0
 	for _, update := range updates {
 		if isValidOrder(update, rules) {
 			sum += update[len(update)/2]
 		}
 	}
-	return sum
+	return sum, nil
 }
 
-func PartTwo(rules map[int][]int, updates [][]int) int {
+func (d *Day05) PartTwo(input []string) (interface{}, error) {
+	rules, updates := ProcessData(input)
 	sum := 0
 	for _, update := range updates {
 		if !isValidOrder(update, rules) {
@@ -87,7 +104,7 @@ func PartTwo(rules map[int][]int, updates [][]int) int {
 			sum += sortedUpdate[len(sortedUpdate)/2]
 		}
 	}
-	return sum
+	return sum, nil
 }
 
 func correctOrder(update []int, rules map[int][]int) []int {
