@@ -1,7 +1,7 @@
 package main
 
 import (
-	"AOC-24/solutions" 
+	"AOC-24/solutions"
 	"AOC-24/utils"
 	"log"
 	"os"
@@ -30,6 +30,7 @@ func main() {
 		3: &solutions.Day03{},
 		4: &solutions.Day04{},
 		5: &solutions.Day05{},
+		6: &solutions.Day06{},
 	}
 
 	// Check if the solver for the provided day exists
